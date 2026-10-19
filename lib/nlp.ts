@@ -65,3 +65,31 @@ export function isPastParticiple(word: string): boolean {
 export function looksLikeParticiple(word: string): boolean {
   return /(?:ed|en)$/.test(word) && word.length > 3;
 }
+
+const npCache = new Map<string, number>();
+
+/**
+ * 一句里最长的名词短语有几个词。
+ * compromise 的 nouns() 做浅层 chunk，够用来识别「多层修饰的 NP」；
+ * 比正则多看一层短语结构，但达不到依存句法的精度。
+ */
+export function maxNounPhraseLength(sentence: string): number {
+  const key = sentence.slice(0, 120);
+  const cached = npCache.get(key);
+  if (cached !== undefined) return cached;
+
+  let max = 0;
+
+  try {
+    const phrases = nlp(sentence).nouns().out("array") as string[];
+    for (const phrase of phrases) {
+      const length = phrase.trim().split(/\s+/).filter(Boolean).length;
+      if (length > max) max = length;
+    }
+  } catch {
+    max = 0;
+  }
+
+  npCache.set(key, max);
+  return max;
+}

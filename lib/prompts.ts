@@ -38,12 +38,17 @@ const RULES = `# 硬性约束（违反任意一条，本次输出作废）
 7. translation：corrected 的忠实中文翻译，一句话，不要附加解释、不要加括号注释。
 8. anchorAnalysis / grammar / why：各一句中文，每个 ≤ 40 字，不要照抄 corrected 原文。
 9. guide：一句英文疑问句（≤ 12 词），引导用户接着说下一句；不需要时给 null。禁止中文。
-10. errorTypes：只能从这些值里选 0~4 个，用户这句没明显错误就给空数组 []：
+10. errorTypes：只标用户原句里真实存在的错误，只能从这些值里选 0~4 个，没有就给空数组 []：
     article / tense / subject_verb / preposition / collocation / word_order / clause /
     nonfinite / word_form / plural / pronoun / comparison / modal / spelling / other
+    你的润色、换更高级的同义词、调整语序以提升流畅度，都不算用户的错误，不要写进 errorTypes。
 11. difficulty：1~5 的整数，表示 corrected 本身的难度（1=基础，5=接近母语），要与本轮目标档位一致。
 12. 用户若用中文或中英混写，corrected 给出对应的自然英文，translation 正常给中文对照。
-13. 不要道歉、不要说教、不要出现「作为 AI」「希望这对你有帮助」之类的话。`;
+13. 不要道歉、不要说教、不要出现「作为 AI」「希望这对你有帮助」之类的话。
+14. 保留用户已经用对的高阶词：不得把 C1/C2 词换成更简单的同义词，那是降维不是提升。
+    允许的改动只有三种：删冗余修饰、拆超长嵌套句、换更准确的连接词。
+15. 如果高阶词本身用错了（搭配错、词性或语境不对），正常改写降级，不受第 14 条保护。
+16. 判难度看用户原句的真实水平，不要因为自己把句子改简单了就跟着降低难度。`;
 
 const OUTPUT_SHAPE = `# 输出字段（类型固定，键名不得改动）
 {
@@ -98,10 +103,11 @@ export function getSystemPrompt(
     `这是本轮第 ${turnCount} / ${TURNS_PER_ROUND} 句。`,
     `isThird 必须是 ${isLastTurn}；summary ${isLastTurn ? "必须输出中文总结" : "必须为 null"}。`,
     "# 本轮要求",
-    "1. 改写难度比画像里的当前水平高半档，不要一次跨两级。",
+    "1. 以用户原句的水平为基准，把改写难度提高半档，不要一次跨两级。",
     "2. 每句最多引入 2 个新词、1 个新结构；再多句子会失真，反而学不进去。",
     "3. 高频错误里已经稳定的点不用再出；薄弱项每句最多带 1 个。",
     "4. 日常模式下以自然为先，不必刻意堆结构。",
+    "5. 用户原句里的高阶词用对了就照原样保留，只精简冗余和结构。",
   ]
     .filter(Boolean)
     .join("\n");

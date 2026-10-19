@@ -129,7 +129,7 @@ export default function NotesPage() {
   };
 
   return (
-    <main className="max-w-md mx-auto h-[100dvh] flex flex-col bg-slate-50 font-sans relative">
+    <main className="w-full max-w-md mx-auto md:max-w-2xl lg:max-w-4xl h-[100dvh] flex flex-col bg-slate-50 font-sans relative">
       <AppHeader title="我的笔记" showBack backHref="/">
         {/* 全部 / 未掌握 / 已掌握 */}
         <div className="flex gap-1.5">

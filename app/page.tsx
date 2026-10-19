@@ -19,6 +19,7 @@ import {
   Undo2,
   Library,
   Trash2,
+  UserRound,
 } from "lucide-react";
 import type {
   ChatCompletionCreateParamsNonStreaming,
@@ -191,7 +192,8 @@ export default function Page() {
       // 本地画像 + 词汇统计：从已存笔记 + 当前会话算，全部在内存里完成
       const cards = await db.cards.toArray();
       const pairs = collectPairs(cards, currentHistory);
-      const vocabReport = buildVocabularyReport(pairs.map((pair) => pair.corrected));
+      // 统计基于用户原句（不是 AI 改写句），否则「AI 改得越多 → 分越低」
+      const vocabReport = buildVocabularyReport(pairs.map((pair) => pair.text));
       const profile = computeProfile(cards, currentHistory, vocabReport);
       const profileText = formatProfile(profile, dictLabel(level));
       const practiceFocus = buildPracticeFocus(profile);
@@ -435,7 +437,7 @@ export default function Page() {
   };
 
   return (
-    <main className="relative max-w-md mx-auto h-[100dvh] flex flex-col bg-slate-50 font-sans">
+    <main className="relative w-full max-w-md mx-auto md:max-w-2xl lg:max-w-4xl h-[100dvh] flex flex-col bg-slate-50 font-sans">
       <AppHeader
         title={
           <span className="flex items-center gap-2">
@@ -454,6 +456,9 @@ export default function Page() {
             </Link>
             <Link href="/notes" className="p-1 active:scale-95 transition-transform" aria-label="我的笔记">
               <BookOpen size={22} />
+            </Link>
+            <Link href="/profile" className="p-1 active:scale-95 transition-transform" aria-label="学习者画像">
+              <UserRound size={22} />
             </Link>
             <Link href="/settings" className="p-1 active:scale-95 transition-transform" aria-label="设置">
               <Settings size={22} />

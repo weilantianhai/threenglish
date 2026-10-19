@@ -52,3 +52,8 @@ yarn-error.log*
 
 # ---------- 本地工具数据 ----------
 .workbuddy/
+
+# ---------- 本地评审 / 截图取证 ----------
+review-tmp/
+site/shots/
+site/assets/*-report.json
