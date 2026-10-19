@@ -3,9 +3,14 @@
 // 归一化后存进 IndexedDB，并替换内存里的词库槽位。
 //
 // 用 book-json-sentence 而不是 simple：只有它同时带音标、词组和例句。
+//
+// 下载任务放在模块级 store 里，而不是页面 state：
+//   - 切页面 / 按返回键离开时任务继续跑，回到词库管理页能接上进度
+//   - 同一本词库同时只有一个任务，重复点击复用同一个 Promise
+//   - 镜像源和词库版本在任务开始时快照一次，中途改设置不会让分卷混版本
 
 import { db } from "../app/db";
-import { getBook } from "./dictCatalog";
+import { getBook, type DictBook } from "./dictCatalog";
 import {
   normalizeDictEntries,
   replaceLevel,
@@ -17,6 +22,9 @@ import {
 const GITHUB_BASE = "https://raw.githubusercontent.com/KyleBing/dict/master";
 const MIRROR_KEY = "dict_mirror";
 const VARIANT_KEY = "dict_variant";
+
+/** 单个分卷的超时：大文件慢，但也不能无限等 */
+const PART_TIMEOUT_MS = 180_000;
 
 /** 词库版本：轻量（词+释义+短语）/ 标准（+例句+音标）/ 完整（+真题、同义词、词形变化） */
 export type DictVariant = "simple" | "sentence" | "full";
@@ -64,71 +72,200 @@ export function getDefaultDictBase(): string {
   return GITHUB_BASE;
 }
 
-export interface DownloadProgress {
+// ---------- 下载任务 store ----------
+
+export type DownloadStatus = "downloading" | "done" | "error" | "canceled";
+
+export interface DownloadTask {
+  level: DictLevel;
+  label: string;
+  status: DownloadStatus;
   /** 0~1 */
   ratio: number;
+  /** 当前阶段的说明文案 */
   message: string;
+  /** 成功安装的词数 */
+  count?: number;
+  /** 失败原因 */
+  error?: string;
+  startedAt: number;
+}
+
+/** 取消下载：与超时抛出的错误区分开 */
+export class DownloadCanceledError extends Error {
+  constructor() {
+    super("已取消下载");
+    this.name = "DownloadCanceledError";
+  }
+}
+
+const downloads = new Map<DictLevel, DownloadTask>();
+const controllers = new Map<DictLevel, AbortController>();
+const inflight = new Map<DictLevel, Promise<number>>();
+const listeners = new Set<() => void>();
+
+// useSyncExternalStore 要求两次变更之间快照保持同一引用
+let snapshot: DownloadTask[] = [];
+
+function emit(): void {
+  snapshot = [...downloads.values()].sort((a, b) => a.startedAt - b.startedAt);
+  for (const listener of listeners) listener();
+}
+
+/** 页面订阅用；返回取消订阅函数 */
+export function subscribeDownloadTasks(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function getDownloadTasks(): DownloadTask[] {
+  return snapshot;
+}
+
+export function getDownloadTask(level: DictLevel): DownloadTask | undefined {
+  return downloads.get(level);
+}
+
+export function isDownloading(level: DictLevel): boolean {
+  return downloads.get(level)?.status === "downloading";
+}
+
+function patchTask(level: DictLevel, patch: Partial<DownloadTask>): void {
+  const prev = downloads.get(level);
+  if (!prev) return;
+  downloads.set(level, { ...prev, ...patch });
+  emit();
+}
+
+/** 取消进行中的任务。已经进入「写入本地」阶段时无法再中断，会正常完成 */
+export function cancelDownload(level: DictLevel): void {
+  controllers.get(level)?.abort();
+}
+
+/** 清掉一条已结束的任务记录（下载中的不允许清） */
+export function dismissDownload(level: DictLevel): void {
+  if (downloads.get(level)?.status === "downloading") return;
+  downloads.delete(level);
+  emit();
 }
 
 /**
- * 下载并安装某个词库。
- * mirror 为空时用 GitHub；填了就用镜像前缀。
+ * 开始下载某本词库。
+ * 已经有任务在跑时直接复用，不会产生第二个请求。
  */
-export async function downloadDictionary(
-  level: DictLevel,
-  onProgress?: (progress: DownloadProgress) => void,
-): Promise<number> {
-  const book = getBook(level);
-  if (!book) throw new Error(`未知词库：${level}`);
+export function startDownload(level: DictLevel): Promise<number> {
+  const running = inflight.get(level);
+  if (running) return running;
 
+  const book = getBook(level);
+  if (!book) return Promise.reject(new Error(`未知词库：${level}`));
+
+  const controller = new AbortController();
+  controllers.set(level, controller);
+
+  downloads.set(level, {
+    level,
+    label: book.label,
+    status: "downloading",
+    ratio: 0,
+    message: "准备下载…",
+    startedAt: Date.now(),
+  });
+  emit();
+
+  const promise = runDownload(book, level, controller)
+    .then((count) => {
+      patchTask(level, {
+        status: "done",
+        ratio: 1,
+        count,
+        message: `已安装 ${count} 个词`,
+      });
+      return count;
+    })
+    .catch((error: unknown) => {
+      const canceled = error instanceof DownloadCanceledError;
+      const message = error instanceof Error ? error.message : String(error);
+      patchTask(level, {
+        status: canceled ? "canceled" : "error",
+        message: canceled ? "已取消下载" : `下载失败：${message}`,
+        error: canceled ? undefined : message,
+      });
+      throw error;
+    })
+    .finally(() => {
+      controllers.delete(level);
+      inflight.delete(level);
+    });
+
+  inflight.set(level, promise);
+  return promise;
+}
+
+async function runDownload(
+  book: DictBook,
+  level: DictLevel,
+  controller: AbortController,
+): Promise<number> {
+  // 开始时快照：中途改镜像或切版本，不会让不同分卷来自不同来源
   const base = (getDictMirror() || GITHUB_BASE).replace(/\/+$/, "");
-  const parts = book.parts;
+  const folder = VARIANT_FOLDER[getDictVariant()];
+  const { parts } = book;
   const merged: DictEntry[] = [];
   const seen = new Set<string>();
 
   for (let i = 0; i < parts.length; i += 1) {
-    onProgress?.({
+    if (controller.signal.aborted) throw new DownloadCanceledError();
+
+    patchTask(level, {
       ratio: i / parts.length,
       message: `下载 ${book.label} 第 ${i + 1}/${parts.length} 个分卷…`,
     });
 
-    // 按用户选的版本拼目录：simple / sentence / full
-    const folder = VARIANT_FOLDER[getDictVariant()];
-    const url = `${base}/${folder}/${parts[i]}.json`;
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, PART_TIMEOUT_MS);
 
-    // 大文件下载慢，但也不能无限等：每个分卷单独计时 3 分钟，下完一卷就重新计时
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 180_000);
-
-    let text: string;
     try {
-      const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+      const response = await fetch(`${base}/${folder}/${parts[i]}.json`, {
+        cache: "no-store",
+        signal: controller.signal,
+      });
       if (!response.ok) throw new Error(`${parts[i]} 下载失败（HTTP ${response.status}）`);
-      text = await response.text();
+      const text = await response.text();
+
+      // normalizeDictEntries 内部会按行 JSON.parse
+      for (const entry of normalizeDictEntries(text, level)) {
+        if (seen.has(entry.word)) continue;
+        seen.add(entry.word);
+        merged.push(entry);
+      }
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(`${parts[i]} 下载超时（3 分钟），试试换镜像`);
+      if (controller.signal.aborted) {
+        // 同一个 AbortController 既管取消也管超时，用 timedOut 区分
+        throw timedOut
+          ? new Error(`${parts[i]} 下载超时（3 分钟），试试换镜像`)
+          : new DownloadCanceledError();
       }
       throw error;
     } finally {
       clearTimeout(timer);
     }
-
-    // normalizeDictEntries 内部会按行 JSON.parse
-    const raw = text;
-    for (const entry of normalizeDictEntries(raw, level)) {
-      if (seen.has(entry.word)) continue;
-      seen.add(entry.word);
-      merged.push(entry);
-    }
   }
 
   if (merged.length === 0) throw new Error("下载到的词库是空的");
+  if (controller.signal.aborted) throw new DownloadCanceledError();
 
-  onProgress?.({ ratio: 1, message: `写入本地（${merged.length} 词）…` });
+  patchTask(level, { ratio: 1, message: `写入本地（${merged.length} 词）…` });
 
-  replaceLevel(level, merged, "downloaded");
+  // 先落盘再换内存：写失败就当作没下载，避免「提示失败但本次会话已生效」。
+  // 从这一行往后不再响应取消 —— IndexedDB 写入没法中断，硬报取消只会让状态和数据对不上。
   await db.dicts.put({ level, entries: merged, updatedAt: Date.now() });
+  replaceLevel(level, merged, "downloaded");
 
   return merged.length;
 }
@@ -146,8 +283,17 @@ export async function loadSavedDictionaries(): Promise<void> {
   }
 }
 
-/** 删除已下载的词库（CET-4 会回到内置版本） */
+/**
+ * 删除已下载的词库（CET-4 会回到内置版本）。
+ * 如果这本词库正在后台下载，先取消并等它落定，避免「删完又被写回来」。
+ */
 export async function removeDictionary(level: DictLevel): Promise<void> {
+  const running = inflight.get(level);
+  if (running) {
+    cancelDownload(level);
+    await running.catch(() => undefined);
+  }
+
   resetLevel(level);
   await db.dicts.delete(level);
 }

@@ -1,18 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Check, Copy, Download, Loader2, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Check, Copy, Download, Loader2, Trash2, X } from "lucide-react";
 import AppHeader from "../../components/AppHeader";
 import { getDictionaryMeta, type DictLevelMeta } from "../../lib/dictionary";
 import { groupBooks, type DictBook } from "../../lib/dictCatalog";
 import {
-  downloadDictionary,
+  cancelDownload,
+  dismissDownload,
   getDefaultDictBase,
   getDictMirror,
   getDictVariant,
+  getDownloadTasks,
   removeDictionary,
   setDictMirror,
   setDictVariant,
+  startDownload,
+  subscribeDownloadTasks,
   VARIANT_HINT,
   VARIANT_LABEL,
   type DictVariant,
@@ -28,38 +32,39 @@ export default function DictionariesPage() {
   const groups = useMemo(() => groupBooks(), []);
   const [activeCategory, setActiveCategory] = useState(groups[0]?.category ?? "");
   const [meta, setMeta] = useState<Record<string, DictLevelMeta>>(() => getDictionaryMeta());
-  const [downloading, setDownloading] = useState<string | null>(null);
-  const [progressText, setProgressText] = useState("");
   const [mirror, setMirror] = useState(() => getDictMirror());
   const [mirrorSaved, setMirrorSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [variant, setVariantState] = useState<DictVariant>(() => getDictVariant());
 
+  // 下载任务在模块级 store 里，离开页面不会丢；回来时直接显示当前进度
+  const downloads = useSyncExternalStore(
+    subscribeDownloadTasks,
+    getDownloadTasks,
+    getDownloadTasks,
+  );
+  const anyDownloading = downloads.some((task) => task.status === "downloading");
+
+  // 任务状态变化后重读词库元信息（尤其 downloading → done）
+  const downloadKey = downloads
+    .map((task) => `${task.level}:${task.status}:${task.count ?? 0}`)
+    .join("|");
+  useEffect(() => {
+    setMeta(getDictionaryMeta());
+  }, [downloadKey]);
+
   const books = groups.find((group) => group.category === activeCategory)?.books ?? [];
 
-  const handleDownload = async (book: DictBook) => {
-    setDownloading(book.id);
-    setProgressText("");
-
-    try {
-      const count = await downloadDictionary(book.id, (progress) => {
-        setProgressText(`${book.label}：${progress.message}`);
-      });
-      setMeta(getDictionaryMeta());
-      setProgressText(`完成：${book.label} 已安装 ${count} 个词`);
-    } catch (error) {
-      setProgressText(
-        `${book.label} 下载失败：${error instanceof Error ? error.message : String(error)}`,
-      );
-    } finally {
-      setDownloading(null);
-    }
+  const handleDownload = (book: DictBook) => {
+    // 先清掉上一次的完成/失败记录，再开新任务
+    dismissDownload(book.id);
+    // 失败和取消都写进任务状态里，这里只需吞掉 rejection
+    void startDownload(book.id).catch(() => undefined);
   };
 
   const handleRemove = async (book: DictBook) => {
     await removeDictionary(book.id);
     setMeta(getDictionaryMeta());
-    setProgressText(book.builtin ? `${book.label} 已恢复内置版本` : `${book.label} 已删除`);
   };
 
   const copyExample = async () => {
@@ -105,7 +110,8 @@ export default function DictionariesPage() {
           {books.map((book, index) => {
             const info = meta[book.id];
             const installed = Boolean(info);
-            const busy = downloading === book.id;
+            const task = downloads.find((item) => item.level === book.id);
+            const busy = task?.status === "downloading";
             const sourceText = !info
               ? "未安装"
               : info.source === "builtin"
@@ -133,7 +139,7 @@ export default function DictionariesPage() {
                   <div className="flex shrink-0 items-center gap-1.5">
                     <button
                       type="button"
-                      disabled={busy || downloading !== null}
+                      disabled={busy || anyDownloading}
                       onClick={() => void handleDownload(book)}
                       className="flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-[11px] font-medium text-white active:scale-95 disabled:opacity-40"
                     >
@@ -148,7 +154,7 @@ export default function DictionariesPage() {
                     {installed && !book.builtin && (
                       <button
                         type="button"
-                        disabled={busy || downloading !== null}
+                        disabled={busy || anyDownloading}
                         onClick={() => void handleRemove(book)}
                         aria-label={`删除 ${book.label}`}
                         className="rounded-lg border border-slate-200 p-1.5 text-slate-400 active:scale-95 disabled:opacity-40"
@@ -173,11 +179,12 @@ export default function DictionariesPage() {
               <button
                 key={item}
                 type="button"
+                disabled={anyDownloading}
                 onClick={() => {
                   setVariantState(item);
                   setDictVariant(item);
                 }}
-                className={`flex-1 rounded-md py-1 text-[11px] font-medium transition-colors ${
+                className={`flex-1 rounded-md py-1 text-[11px] font-medium transition-colors disabled:opacity-40 ${
                   variant === item ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
                 }`}
               >
@@ -227,8 +234,60 @@ export default function DictionariesPage() {
           </p>
         </div>
 
-        {progressText && (
-          <p className="break-all text-[11px] leading-relaxed text-indigo-600">{progressText}</p>
+        {/* 下载任务：状态在模块级 store 里，离开页面回来还能接上 */}
+        {downloads.length > 0 && (
+          <div className="space-y-1.5">
+            {downloads.map((task) => (
+              <div key={task.level} className="rounded-lg bg-slate-50 px-2.5 py-1.5">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`min-w-0 flex-1 break-all text-[11px] leading-relaxed ${
+                      task.status === "error"
+                        ? "text-red-500"
+                        : task.status === "canceled"
+                          ? "text-slate-400"
+                          : "text-indigo-600"
+                    }`}
+                  >
+                    <span className="font-medium">{task.label}</span>：{task.message}
+                  </span>
+
+                  {task.status === "downloading" ? (
+                    <button
+                      type="button"
+                      onClick={() => cancelDownload(task.level)}
+                      className="shrink-0 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500 active:scale-95"
+                    >
+                      取消
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => dismissDownload(task.level)}
+                      aria-label="收起状态"
+                      className="shrink-0 rounded p-0.5 text-slate-300 active:scale-95"
+                    >
+                      <X size={11} />
+                    </button>
+                  )}
+                </div>
+
+                {task.status === "downloading" && (
+                  <div className="mt-1 h-0.5 w-full overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-indigo-500 transition-all"
+                      style={{ width: `${Math.round(task.ratio * 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            {anyDownloading && (
+              <p className="text-[10px] leading-relaxed text-slate-400">
+                下载在后台继续，离开本页不会中断。
+              </p>
+            )}
+          </div>
         )}
       </div>
     </main>
