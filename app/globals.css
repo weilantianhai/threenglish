@@ -22,8 +22,7 @@
 }
 
 /* 单词卡片弹层 */
-@keyframes sheet-up {
-  from {
+@keyframes sheet-up {  from {
     transform: translateY(24px);
     opacity: 0;
   }
@@ -64,4 +63,27 @@
 
 .animate-pop-in {
   animation: pop-in 0.16s ease-out;
+}
+
+/* 页面切换：淡入。只做透明度，避免 transform 生成新的包含块影响 fixed 浮层 */
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-page-in {
+  animation: page-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in,
+  .animate-sheet-up,
+  .animate-fade-in,
+  .animate-pop-in {
+    animation: none;
+  }
 }

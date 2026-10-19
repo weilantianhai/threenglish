@@ -95,7 +95,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="max-w-md mx-auto h-[100dvh] flex flex-col bg-slate-50 font-sans">
+    <main className="w-full max-w-md mx-auto md:max-w-2xl lg:max-w-4xl h-[100dvh] flex flex-col bg-slate-50 font-sans">
       <AppHeader title="设置" showBack backHref="/" />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
@@ -127,19 +127,6 @@ export default function SettingsPage() {
         </div>
 
         <Link
-          href="/profile"
-          className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm active:scale-[0.99] transition-transform"
-        >
-          <div className="min-w-0">
-            <h2 className="text-sm font-bold text-slate-800">学习者画像</h2>
-            <p className="mt-1 text-xs leading-relaxed text-slate-400">
-              能力估值、用词分布、高频错误 —— AI 就是照着这些给你出题的。
-            </p>
-          </div>
-          <ChevronRight size={18} className="shrink-0 text-slate-300" />
-        </Link>
-
-                <Link
           href="/dictionaries"
           className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm active:scale-[0.99] transition-transform"
         >

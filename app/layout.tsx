@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { App as CapApp } from "@capacitor/app"; // 引入 Capacitor App 插件
 import { WordCardProvider } from "../components/WordCardSheet";
 import { loadSavedDictionaries } from "../lib/dictRuntime";
+import { runTopBackHandler } from "../lib/backHandler";
 import "./globals.css";
 
 export default function RootLayout({
@@ -32,6 +33,9 @@ export default function RootLayout({
   useEffect(() => {
     // 监听安卓物理返回键
     const backButtonHandler = CapApp.addListener("backButton", () => {
+      // 有浮层（比如单词卡）在顶层时，让浮层先关掉，不返回上一页
+      if (runTopBackHandler()) return;
+
       if (pathname !== "/") {
         // 如果不在首页，就返回上一页
         router.back();
@@ -57,7 +61,10 @@ export default function RootLayout({
         {/* 单词卡片弹层挂在根节点，全站任何位置都能 popup 查词 */}
         <WordCardProvider>
           {ready ? (
-            children
+            // key 用 pathname，切页时重新触发一次入场动画
+            <div key={pathname} className="animate-page-in">
+              {children}
+            </div>
           ) : (
             <div className="flex h-[100dvh] items-center justify-center bg-slate-50 text-sm text-slate-400">
               正在加载本地词库…

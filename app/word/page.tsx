@@ -90,7 +90,7 @@ export default function WordPage() {
   const router = useRouter();
 
   return (
-    <main className="max-w-md mx-auto min-h-[100dvh] flex flex-col bg-slate-50 font-sans">
+    <main className="w-full max-w-md mx-auto md:max-w-2xl lg:max-w-4xl min-h-[100dvh] flex flex-col bg-slate-50 font-sans">
       <AppHeader
         title="查词"
         showBack

@@ -6,7 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { Activity, BookOpen, ChevronRight, Target, Turtle } from "lucide-react";
 import { db } from "../db";
 import { readChatState } from "../../lib/chatStore";
-import { collectPairs, computeProfile, ERROR_LABEL } from "../../lib/profile";
+import { BAND_NAMES, collectPairs, computeProfile, ERROR_LABEL } from "../../lib/profile";
 import { getBookLabel } from "../../lib/dictCatalog";
 import { buildVocabularyReport } from "../../lib/wordStats";
 import AppHeader from "../../components/AppHeader";
@@ -81,7 +81,8 @@ export default function ProfilePage() {
     const history = readChatState().history;
     const allCards = cards ?? [];
     const pairs = collectPairs(allCards, history);
-    const vocabReport = buildVocabularyReport(pairs.map((pair) => pair.corrected));
+    // 统计基于用户原句，不是 AI 改写句
+    const vocabReport = buildVocabularyReport(pairs.map((pair) => pair.text));
     return {
       profile: computeProfile(allCards, history, vocabReport),
       report: vocabReport,
@@ -93,7 +94,7 @@ export default function ProfilePage() {
   const maxUsage = Math.max(1, ...report.usage.slice(0, 10).map((item) => item.count));
 
   return (
-    <main className="max-w-md mx-auto h-[100dvh] flex flex-col bg-slate-50 font-sans">
+    <main className="w-full max-w-md mx-auto md:max-w-2xl lg:max-w-4xl h-[100dvh] flex flex-col bg-slate-50 font-sans">
       <AppHeader title="我的画像" showBack backHref="/" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 overscroll-contain pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
@@ -126,26 +127,29 @@ export default function ProfilePage() {
                 style={{ width: `${Math.min(100, profile.ability)}%` }}
               />
             </div>
-            <div className="mt-1 flex justify-between text-[10px] text-slate-300">
-              <span>A2</span>
-              <span>B1</span>
-              <span>B1+</span>
-              <span>B2</span>
-              <span>B2+</span>
-              <span>C1</span>
+            <div className="mt-1 flex justify-between text-[9px] text-slate-300">
+              {BAND_NAMES.map((band) => (
+                <span key={band}>{band}</span>
+              ))}
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-3 gap-2 lg:grid-cols-3">
             <Stat label="词汇" value={profile.subBands.vocab} />
             <Stat label="句法" value={profile.subBands.syntax} />
             <Stat label="准确度" value={profile.subBands.accuracy} />
           </div>
 
+          {profile.capped && (
+            <p className="mt-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-700">
+              单项表现不错，但样本还不够，综合档位先封顶。多练几句就会放开。
+            </p>
+          )}
+
           <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
             {isEmpty
               ? "还没有练习数据。练几句之后这里会开始积累。"
-              : `基于最近 ${profile.sentences} 句：词汇档看 CET-6 词占比，句法档看复杂结构数，准确度看每句错误数。`}
+              : `基于最近 ${profile.sentences} 句：词汇档看高阶词占比，句法档看复杂结构数，准确度看每百词错误数。`}
           </p>
         </section>
 
@@ -178,21 +182,30 @@ export default function ProfilePage() {
           {Object.entries(profile.coverage).map(([id, percent]) => (
             <Meter key={id} label={getBookLabel(id)} value={percent} tone="emerald" />
           ))}
-          <p className="text-[11px] leading-relaxed text-slate-400">
-            按「主动用过的词」算，覆盖率高说明词库吃得透；低不代表不会，只是没开口用过。
-            {profile.vocabSize.estimated !== null ? (
-              <>
-                {" "}
-                按 Chao1 估计，你的实际词汇量约 <b>{profile.vocabSize.estimated}</b> 个（样本里出现{" "}
-                {profile.vocabSize.unique} 个）。
-              </>
+          <div className="space-y-1.5 text-[11px] leading-relaxed text-slate-400">
+            <p>
+              按推断的词汇量估算，不是只统计你实际用过几个词 —— 所以练几句也能看到大致覆盖。
+            </p>
+            <p>
+              · 已主动使用 <b className="text-slate-600">{profile.vocabSize.unique}</b> 个不同的词
+              （事实，不含功能词）
+            </p>
+            {profile.vocabSize.tierFloor !== null ? (
+              <p>
+                · 按用词等级推断，至少认识{" "}
+                <b className="text-slate-600">{profile.vocabSize.tierFloor}</b>{" "}
+                个词（会用这一档的词，说明底下那批基础词大概率也会）
+              </p>
             ) : (
-              <>
-                {" "}
-                词汇量评估中：目前内容词样本 {report.tokens} 个，超过 50 个且不是大量「只出现一次」的词之后才会给数字。
-              </>
+              <p>· 还看不出用词等级，多写几句再估</p>
             )}
-          </p>
+            <p>
+              · 样本覆盖率 {profile.vocabSize.coveragePercent}%
+              {profile.vocabSize.coveragePercent < 30
+                ? "，说明还有不少新词没出现，继续写会更准"
+                : "，这几次练习的用词已经比较稳定"}
+            </p>
+          </div>
         </section>
 
         {/* 高频用词 */}
@@ -230,7 +243,7 @@ export default function ProfilePage() {
         {/* 句法 */}
         <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-3">
           <h2 className="text-sm font-bold text-slate-800">句法（每句）</h2>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 lg:grid-cols-3">
             <Stat label="从句" value={profile.syntax.clause.toFixed(1)} />
             <Stat label="非谓语" value={profile.syntax.nonfinite.toFixed(1)} />
             <Stat label="被动" value={profile.syntax.passive.toFixed(1)} />
@@ -280,7 +293,7 @@ export default function ProfilePage() {
         {/* 练习量 */}
         <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
           <h2 className="text-sm font-bold text-slate-800">练习记录</h2>
-          <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="mt-3 grid grid-cols-3 gap-2 lg:grid-cols-3">
             <Stat label="笔记组" value={String(profile.totalCards)} />
             <Stat label="已掌握" value={String(profile.mastered)} />
             <Stat label="分析句数" value={String(profile.sentences)} />

@@ -26,7 +26,7 @@ const VARIANTS: DictVariant[] = ["simple", "sentence", "full"];
 
 /** 实测可用的镜像示例 */
 const EXAMPLE_MIRROR =
-  "https://ghproxy.net/https://raw.githubusercontent.com/KyleBing/dict/master";
+  "https://ghfast.top/https://raw.githubusercontent.com/KyleBing/dict/master";
 
 export default function DictionariesPage() {
   const groups = useMemo(() => groupBooks(), []);
@@ -78,7 +78,7 @@ export default function DictionariesPage() {
   };
 
   return (
-    <main className="max-w-md mx-auto h-[100dvh] flex flex-col bg-slate-50 font-sans">
+    <main className="w-full max-w-md mx-auto md:max-w-2xl lg:max-w-4xl h-[100dvh] flex flex-col bg-slate-50 font-sans">
       <AppHeader title="词库管理" showBack backHref="/words" />
 
       {/* 分类横向分页 */}

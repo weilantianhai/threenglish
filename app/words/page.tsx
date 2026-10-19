@@ -89,7 +89,7 @@ export default function WordsPage() {
   }, [hasMore, count]);
 
   return (
-    <main className="max-w-md mx-auto h-[100dvh] flex flex-col bg-slate-50 font-sans">
+    <main className="w-full max-w-md mx-auto md:max-w-2xl lg:max-w-4xl h-[100dvh] flex flex-col bg-slate-50 font-sans">
       <AppHeader
         title="词库"
         showBack
@@ -183,7 +183,7 @@ export default function WordsPage() {
             <span className="text-xs">可以点右上角 AI 现查</span>
           </div>
         ) : (
-          <div className="columns-2 gap-2">
+          <div className="columns-2 gap-2 md:columns-3 lg:columns-4">
             {visible.map(({ word, meaning }) => (
               <button
                 key={word}

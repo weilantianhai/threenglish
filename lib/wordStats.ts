@@ -76,14 +76,22 @@ export interface VocabularyReport {
   tokens: number;
   /** 去重后的词数 */
   unique: number;
-  /** Chao1 估计的「实际词汇量」；样本不足时为 null（别硬给数字） */
+  /** Chao1 偏差校正估计；样本不足时为 null（别硬给数字） */
   estimatedSize: number | null;
+  /** 95% 置信区间；样本不足时为 null */
+  estimateRange: { low: number; high: number } | null;
+  /** Good–Turing 样本覆盖率 Ĉ（0~1）；越低说明样本里还有越多没出现的词 */
+  sampleCoverage: number;
+  /** Good–Turing 覆盖率反推的估计：U / Ĉ；样本覆盖率太低时为 null */
+  coverageEstimate: number | null;
   /** 样本是否够算出可信的词汇量估计 */
   estimateConfident: boolean;
   /** 按等级分档的去重词数占比 */
   tiers: TierShare[];
   /** 不在任何词库里的词数 / 占比 */
   outside: { count: number; percent: number };
+  /** 表外词里「看起来是高阶词」的数量（长词 / 拉丁词缀），用来避免把字典不认识的高阶词当成低水平 */
+  advancedOutside: number;
   /** 按使用次数降序 */
   usage: WordUsage[];
   /** 各词库的词条覆盖率（百分比，按词库 id） */
@@ -121,26 +129,55 @@ export function buildVocabularyReport(sentences: string[]): VocabularyReport {
 
   const unique = usage.length;
 
-  // Chao1：用「只出现一次」和「出现两次」的词频估计还有多少词没见过
+  // 频次统计：f1 = 只出现一次的词，f2 = 出现两次的词
   let f1 = 0;
   let f2 = 0;
   for (const item of usage) {
     if (item.count === 1) f1 += 1;
     else if (item.count === 2) f2 += 1;
   }
-  // Chao1：用「只出现一次」和「出现两次」的词频估计还有多少词没见过。
-  // 它是生态学算法，极度依赖样本量：样本里 singleton 太多时会疯狂外推，
-  // 所以样本不足时不给数字（estimatedSize = null），足够时也加一个上限。
-  const singletonRatio = unique > 0 ? f1 / unique : 1;
-  const confident = tokens >= 50 && unique >= 30 && singletonRatio <= 0.8;
-  const rawEstimate =
-    f2 > 0 ? unique + (f1 * f1) / (2 * f2) : unique + (f1 * (f1 - 1)) / 2;
-  // 上限：最多估算为观测词数的 2.5 倍，避免「21 个词估出 231」这种离谱数字
-  const estimatedSize = confident ? Math.round(Math.min(rawEstimate, unique * 2.5)) : null;
+
+  // Chao1 偏差校正形式：S + f1(f1-1)/(2(f2+1))。
+  // 比原来的 f1²/(2f2) 稳：f2 = 0 时不会除零，也不要求样本「singleton 占比够低」才敢说话。
+  // 只有样本量太小（< 50 个内容词）时才不显示，避免「21 个词估出 231」。
+  const confident = tokens >= 50 && unique >= 20;
+
+  let estimatedSize: number | null = null;
+  let estimateRange: { low: number; high: number } | null = null;
+
+  if (confident) {
+    const biasCorrected = unique + (f1 * (f1 - 1)) / (2 * (f2 + 1));
+
+    // Chao (1987) 方差估计。f2 太小时方差会爆（区间变成 0 ~ 无穷），
+    // 这时候算不上「估计」，只能说「至少见过这么多词」，所以不给区间。
+    const ratio = f2 > 0 ? f1 / f2 : Number.POSITIVE_INFINITY;
+    const usable = f2 >= 2 && ratio <= 10;
+
+    if (usable) {
+      const variance = f2 * (0.5 * ratio ** 2 + ratio ** 3 + 0.25 * ratio ** 4);
+      const margin = 1.96 * Math.sqrt(variance);
+
+      const low = Math.max(unique, Math.round(biasCorrected - margin));
+      // 上限防爆：最多观测词数的 3 倍
+      const high = Math.min(Math.round(unique * 3), Math.round(biasCorrected + margin));
+
+      estimatedSize = Math.round(biasCorrected);
+      estimateRange = { low, high: Math.max(low, high) };
+    }
+  }
+
+  // Good–Turing 样本覆盖率：Ĉ = 1 − f1/n。
+  // 覆盖率越低说明还有大量词没被抽到，用它反推总量 U/Ĉ；太低的不可信，直接不给。
+  const sampleCoverage = tokens > 0 ? 1 - f1 / tokens : 0;
+  const coverageEstimate =
+    sampleCoverage > 0.25
+      ? Math.min(unique * 3, Math.round(unique / sampleCoverage))
+      : null;
 
   // 按词库等级分档：一个词若被多本词库收录，按最低等级算
   const rankCounts = new Map<number, number>();
   let outsideCount = 0;
+  let advancedOutside = 0;
 
   for (const item of usage) {
     const ranks = item.levels
@@ -149,6 +186,7 @@ export function buildVocabularyReport(sentences: string[]): VocabularyReport {
 
     if (ranks.length === 0) {
       outsideCount += 1;
+      if (looksAdvancedOutside(item.word)) advancedOutside += 1;
       continue;
     }
 
@@ -192,9 +230,13 @@ export function buildVocabularyReport(sentences: string[]): VocabularyReport {
     tokens,
     unique,
     estimatedSize,
+    estimateRange,
+    sampleCoverage,
+    coverageEstimate,
     estimateConfident: confident,
     tiers,
     outside: { count: outsideCount, percent: pct(outsideCount, unique) },
+    advancedOutside,
     usage,
     coverage,
     unused,
@@ -204,4 +246,14 @@ export function buildVocabularyReport(sentences: string[]): VocabularyReport {
 function pct(part: number, total: number): number {
   if (total <= 0) return 0;
   return Math.round((part / total) * 100);
+}
+
+/** 拉丁词缀 / 长词：词库里没有时，大概率是超出当前词库的高阶词，而不是拼错的基础词 */
+const ADVANCED_SUFFIX =
+  /(tion|sion|ity|ous|ate|ify|ism|ance|ence|ary|ive|ial|ical|ment|ness)$/;
+
+function looksAdvancedOutside(word: string): boolean {
+  if (word.length >= 12) return true;
+  if (word.length >= 9 && ADVANCED_SUFFIX.test(word)) return true;
+  return false;
 }

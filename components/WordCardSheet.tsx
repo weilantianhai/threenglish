@@ -4,12 +4,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { X } from "lucide-react";
 import WordCard from "./WordCard";
+import { registerBackHandler } from "../lib/backHandler";
 
 interface WordCardContextValue {
   /** 打开某个单词的卡片弹层 */
@@ -38,6 +40,25 @@ export function WordCardProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const closeWord = useCallback(() => setWord(null), []);
+
+  // 卡片打开时接管安卓返回键：先关卡片，而不是把后面的页面退掉
+  useEffect(() => {
+    if (!word) return;
+    return registerBackHandler(() => {
+      setWord(null);
+      return true;
+    });
+  }, [word]);
+
+  // Esc 也能关（桌面端顺手）
+  useEffect(() => {
+    if (!word) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setWord(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [word]);
 
   const value = useMemo(() => ({ openWord, closeWord }), [openWord, closeWord]);
 

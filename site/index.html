@@ -1,0 +1,1033 @@
+<!doctype html>
+<html lang="zh-CN" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Threenglish — 你说一句，它改一句，刚好高半档</title>
+    <meta
+      name="description"
+      content="Threenglish 是一个纯本地的英文改写练习工具：你说一句英文，它改成比现在高半档的版本，标出换掉的词和理由，再把每三句存成一组笔记。"
+    />
+    <link rel="icon" href="assets/icon.png" />
+    <link rel="stylesheet" href="styles.css?v=4" />
+  </head>
+  <body>
+    <!-- lucide 图标（与 App 使用同一套图标语法） -->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <symbol id="i-library" viewBox="0 0 24 24">
+        <path d="m16 6 4 14" /><path d="M12 6v14" /><path d="M8 8v12" /><path d="M4 4v16" />
+      </symbol>
+      <symbol id="i-book-open" viewBox="0 0 24 24">
+        <path d="M12 5v16" />
+        <path d="M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z" />
+      </symbol>
+      <symbol id="i-user-round" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" />
+      </symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24">
+        <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+        <circle cx="12" cy="12" r="3" />
+      </symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24">
+        <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
+        <path d="M20 2v4" /><path d="M22 4h-4" />
+      </symbol>
+      <symbol id="i-lightbulb" viewBox="0 0 24 24">
+        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+        <path d="M9 18h6" /><path d="M10 22h4" />
+      </symbol>
+      <symbol id="i-rotate-ccw" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
+      </symbol>
+      <symbol id="i-send" viewBox="0 0 24 24">
+        <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
+        <path d="m21.854 2.147-10.94 10.939" />
+      </symbol>
+      <symbol id="i-undo-2" viewBox="0 0 24 24">
+        <path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+      </symbol>
+      <symbol id="i-check-circle" viewBox="0 0 24 24">
+        <path d="M21.801 10A10 10 0 1 1 17 3.335" /><path d="m9 11 3 3L22 4" />
+      </symbol>
+      <symbol id="i-key" viewBox="0 0 24 24">
+        <path d="m2 21 9.6-9.6" />
+        <path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19" />
+        <circle cx="16.5" cy="7.5" r="4.5" />
+      </symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+      <symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6" /></symbol>
+      <symbol id="i-ellipsis" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" />
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24">
+        <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M10 11v6" /><path d="M14 11v6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" />
+        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24">
+        <path d="M8 2v3" /><path d="M16 2v3" /><path d="M3 9h18" />
+        <rect width="18" height="18" x="3" y="4" rx="2" />
+      </symbol>
+      <symbol id="i-volume" viewBox="0 0 24 24">
+        <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" />
+        <path d="M16 9a5 5 0 0 1 0 6" /><path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
+      </symbol>
+      <symbol id="i-activity" viewBox="0 0 24 24">
+        <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+      </symbol>
+      <symbol id="i-target" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+      </symbol>
+      <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M12 15V3" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" />
+      </symbol>
+      <symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24">
+        <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+      </symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" />
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" />
+      </symbol>
+      <symbol id="i-arrow-up-right" viewBox="0 0 24 24">
+        <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+      </symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+        <path d="m9 12 2 2 4-4" />
+      </symbol>
+      <symbol id="i-wifi-off" viewBox="0 0 24 24">
+        <path d="M12 20h.01" /><path d="M8.5 16.429a5 5 0 0 1 7 0" />
+        <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /><path d="M19 12.859a10 10 0 0 0-2.007-1.523" />
+        <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /><path d="M22 8.82a15 15 0 0 0-11.288-3.764" />
+        <path d="m2 2 20 20" />
+      </symbol>
+      <symbol id="i-database" viewBox="0 0 24 24">
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5V19A9 3 0 0 0 21 19V5" /><path d="M3 12A9 3 0 0 0 21 12" />
+      </symbol>
+      <symbol id="i-hard-drive" viewBox="0 0 24 24">
+        <path d="M10 16h.01" />
+        <path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+        <path d="M21.946 12.013H2.054" /><path d="M6 16h.01" />
+      </symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24">
+        <path d="M10 2v7.751a.25.25 0 0 0 .407.195l2.28-1.834a.5.5 0 0 1 .627 0l2.28 1.834A.25.25 0 0 0 16 9.751V2" />
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
+      </symbol>
+      <symbol id="i-message" viewBox="0 0 24 24">
+        <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
+      </symbol>
+      <symbol id="i-bars" viewBox="0 0 24 24">
+        <path d="M5 21v-6" /><path d="M12 21V3" /><path d="M19 21V9" />
+      </symbol>
+    </svg>
+
+    <header class="nav" id="nav">
+      <div class="wrap nav-inner">
+        <a class="brand" href="#top" aria-label="Threenglish 首页">
+          <img class="brand-mark" src="assets/icon.png" alt="" width="30" height="30" />
+          <span>Threenglish</span>
+        </a>
+        <nav class="nav-links" aria-label="页面导航">
+          <a href="#how">怎么用</a>
+          <a href="#journey">一句话的旅程</a>
+          <a href="#screens">界面</a>
+          <a href="#dict">词库</a>
+          <a href="#profile">画像</a>
+        </nav>
+        <a class="btn btn-primary btn-sm" href="#download">下载 APK</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- 首屏 -->
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <h1>你说一句，它改一句。<span class="h1-accent">刚好高半档。</span></h1>
+            <p class="lede">
+              语法错了、词想不起来都没关系。先把画面说出来，它负责改成你下一档能写出来的英文，并标出换了哪个词、为什么。
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="#download">下载 Android 版</a>
+              <a class="btn btn-quiet" href="#journey">看它怎么改</a>
+            </div>
+            <p class="hero-meta">
+              <span>Android APK · 4.5 MB</span>
+              <span>离线词条 10,274</span>
+              <span>需要自备 DeepSeek Key</span>
+            </p>
+          </div>
+
+          <div class="hero-visual" data-hero-visual>
+            <div class="phone phone--hero" role="group" aria-label="Threenglish 首页界面预览">
+              <div class="phone-screen">
+                <div class="app">
+                  <div class="a-level-backdrop" id="level-backdrop" aria-hidden="true" hidden></div>
+
+                  <header class="a-header" aria-hidden="true">
+                    <div class="a-head-row">
+                      <div class="a-title">Threenglish <span class="a-count">1/3</span></div>
+                      <div class="a-head-icons">
+                        <svg class="ic ic-20"><use href="#i-library" /></svg>
+                        <svg class="ic ic-20"><use href="#i-book-open" /></svg>
+                        <svg class="ic ic-20"><use href="#i-user-round" /></svg>
+                        <svg class="ic ic-20"><use href="#i-settings" /></svg>
+                      </div>
+                    </div>
+                  </header>
+
+                  <div class="a-chat" aria-hidden="true">
+                    <div class="a-bubble">I think this plan is not very good because many problems.</div>
+
+                    <article class="a-card">
+                      <div>
+                        <div class="a-label a-label--green">
+                          <svg class="ic ic-14"><use href="#i-check-circle" /></svg>优化表达
+                        </div>
+                        <p class="a-sentence">Although the plan has merit, I'm concerned about its practical risks.</p>
+                        <p class="a-translation">虽然这个方案有可取之处，但我担心它落地的风险。</p>
+                      </div>
+
+                      <div>
+                        <div class="a-label a-label--purple">
+                          <svg class="ic ic-14"><use href="#i-key" /></svg>锚点词
+                        </div>
+                        <div class="a-chips">
+                          <span class="a-chip a-chip--purple">has merit</span>
+                          <span class="a-chip a-chip--purple">practical risks</span>
+                        </div>
+                        <p class="a-tip">
+                          <svg class="ic ic-12"><use href="#i-lightbulb" /></svg>
+                          has merit 比 is good 更具体；practical risks 把 many problems 说清楚。
+                        </p>
+                      </div>
+
+                      <div class="a-box">
+                        <p><b>语法：</b>Although 引导让步从句，替换 because 的因果堆叠。</p>
+                        <p><b>为啥换：</b>先承认可取之处，再说担心什么，句子更像书面表达。</p>
+                      </div>
+
+                      <div class="a-guide">
+                        <svg class="ic ic-14"><use href="#i-message" /></svg>
+                        下次试试用 Although 让一步，再讲你的判断。
+                      </div>
+                    </article>
+
+                    <div class="a-system">本组对话已保存</div>
+                  </div>
+
+                  <div class="a-composer">
+                    <div class="a-composer-meta">
+                      <div class="a-level-wrap">
+                        <button
+                          class="a-level"
+                          id="level-pill"
+                          type="button"
+                          aria-haspopup="listbox"
+                          aria-expanded="false"
+                          aria-controls="level-menu"
+                        >
+                          <i></i><span class="sr-only">选择词库：</span><span id="level-label">日常</span>
+                          <svg class="ic ic-11"><use href="#i-chevron-down" /></svg>
+                        </button>
+
+                        <div class="a-level-menu" id="level-menu" role="listbox" aria-label="选择词库" hidden>
+                          <button class="a-level-option is-active" type="button" role="option" aria-selected="true" data-level="日常">
+                            <span><b>日常</b><small>不查词库，只求自然</small></span>
+                            <svg class="ic ic-14"><use href="#i-check" /></svg>
+                          </button>
+                          <button class="a-level-option" type="button" role="option" aria-selected="false" data-level="CET-4">
+                            <span><b>CET-4</b><small>从 CET-4 词库取词</small></span>
+                            <svg class="ic ic-14"><use href="#i-check" /></svg>
+                          </button>
+                          <button class="a-level-option" type="button" role="option" aria-selected="false" data-level="CET-6">
+                            <span><b>CET-6</b><small>从 CET-6 词库取词</small></span>
+                            <svg class="ic ic-14"><use href="#i-check" /></svg>
+                          </button>
+                          <button class="a-level-option" type="button" role="option" aria-selected="false" data-level="考研">
+                            <span><b>考研</b><small>从考研词库取词</small></span>
+                            <svg class="ic ic-14"><use href="#i-check" /></svg>
+                          </button>
+                          <p class="a-level-note">选了词库，AI 会先查这本词库，再改写成你的下一档。</p>
+                        </div>
+                      </div>
+                      <span aria-hidden="true">第 1 / 3 句</span>
+                    </div>
+                    <div class="a-input" aria-hidden="true">
+                      <svg class="ic ic-16 a-undo"><use href="#i-undo-2" /></svg>
+                      <span class="a-placeholder">输入英文…</span>
+                      <span class="a-send"><svg class="ic ic-16"><use href="#i-send" /></svg></span>
+                    </div>
+                  </div>
+                  <div class="a-level-toast" id="level-toast" role="status" hidden></div>
+                </div>
+              </div>
+            </div>
+            <p class="hero-hint">点难度胶囊可以切换词库，AI 会先查词再改写</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 怎么用 -->
+      <section class="section" id="how">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>一条对话，三步走完</h2>
+            <p class="section-lede">一轮三句，句子短也行。它不替你写作文，只改你这一句。</p>
+          </div>
+
+          <ol class="steps">
+            <li class="step" data-reveal>
+              <span class="step-num">01</span>
+              <div class="step-demo" aria-hidden="true">
+                <div class="demo-scene">
+                  <svg class="ic ic-14"><use href="#i-lightbulb" /></svg>
+                  <span>说说你小时候最怕的东西。</span>
+                  <svg class="ic ic-11"><use href="#i-rotate-ccw" /></svg>
+                </div>
+                <div class="demo-input">
+                  <span>I was afraid of the dark when I was a kid…</span>
+                  <span class="demo-send"><svg class="ic ic-14"><use href="#i-send" /></svg></span>
+                </div>
+              </div>
+              <h3>先说一句</h3>
+              <p>用英文写下想说的，中英混写、拼错都行。点一下提示条换个场景，不用自己想题目。</p>
+            </li>
+
+            <li class="step" data-reveal>
+              <span class="step-num">02</span>
+              <div class="step-demo" aria-hidden="true">
+                <div class="demo-ai">
+                  <div class="demo-ai-row">
+                    <span class="demo-status"><svg class="ic ic-12"><use href="#i-check-circle" /></svg>优化表达</span>
+                    <span class="demo-step">2 / 3</span>
+                  </div>
+                  <p class="demo-corrected">The dark used to terrify me when I was little.</p>
+                  <div class="demo-chips">
+                    <span>terrify</span>
+                    <span>used to</span>
+                  </div>
+                </div>
+              </div>
+              <h3>改到高半档</h3>
+              <p>每句最多引入两个新词、一个新结构。锚点词、语法点和错误类型都标在卡片上，不写长篇点评。</p>
+            </li>
+
+            <li class="step" data-reveal>
+              <span class="step-num">03</span>
+              <div class="step-demo" aria-hidden="true">
+                <div class="demo-note">
+                  <div class="demo-note-head">
+                    <span><svg class="ic ic-11"><use href="#i-calendar" /></svg>10 月 19 日</span>
+                    <span class="demo-review"><svg class="ic ic-10"><use href="#i-play" /></svg>复习</span>
+                  </div>
+                  <p>The dark used to terrify me when I was little.</p>
+                  <div class="demo-note-foot">
+                    <span>3 / 3 句已完成</span>
+                    <span class="demo-check"><svg class="ic ic-11"><use href="#i-check" /></svg>已掌握</span>
+                  </div>
+                </div>
+              </div>
+              <h3>存成一组</h3>
+              <p>三句自动存成一组。可以展开摘要、翻卡复习，也可以标成已掌握。</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- 滚动叙事：一句怎么改出来 -->
+      <section class="journey" id="journey">
+        <div class="journey-stage">
+          <div class="wrap journey-grid">
+            <div class="journey-copy">
+              <h2>这句，是怎么改出来的</h2>
+              <p class="section-lede">往下滚，看它从原句走到改写。每一步都留在这张卡里。</p>
+
+              <ol class="journey-steps">
+                <li class="journey-step" data-journey-step="0">
+                  <span class="journey-num">01</span>
+                  <div>
+                    <h3>原句先留着</h3>
+                    <p>先不改你想说的。哪两处最值得动，标出来。</p>
+                  </div>
+                </li>
+                <li class="journey-step" data-journey-step="1">
+                  <span class="journey-num">02</span>
+                  <div>
+                    <h3>换成更具体的词</h3>
+                    <p><code>not very good</code> → <code>has merit</code>；<code>many problems</code> → <code>practical risks</code>。不是换成大词，是换成能站住的判断。</p>
+                  </div>
+                </li>
+                <li class="journey-step" data-journey-step="2">
+                  <span class="journey-num">03</span>
+                  <div>
+                    <h3>把理由写下来</h3>
+                    <p>锚点词、语法点、为什么换，都留在同一张卡里。点任意单词还能继续查。</p>
+                  </div>
+                </li>
+              </ol>
+
+              <div class="journey-dots" aria-hidden="true">
+                <span class="is-on"></span><span></span><span></span>
+              </div>
+            </div>
+
+            <div class="journey-visual">
+              <article class="rewrite-card" id="rewrite-card">
+                <div class="rw-head">
+                  <span class="rw-badge">第 2 / 3 句</span>
+                  <span class="rw-level"><i></i>日常</span>
+                </div>
+
+                <p class="rw-original">
+                  I think this plan is
+                  <span class="strike" data-strike>not very good</span>
+                  because
+                  <span class="strike" data-strike>many problems</span>.
+                </p>
+
+                <div class="rw-rule"></div>
+
+                <div class="rw-body">
+                  <div class="rw-skeleton" data-rw="skeleton" aria-hidden="true">
+                    <div class="rw-skel-status"><span class="rw-skel-dot"></span>正在改写…</div>
+                    <span class="rw-skel-line" style="width: 92%"></span>
+                    <span class="rw-skel-line" style="width: 78%"></span>
+                    <span class="rw-skel-line" style="width: 48%"></span>
+                    <div class="rw-skel-chips"><span></span><span></span></div>
+                    <div class="rw-skel-box">
+                      <span class="rw-skel-line" style="width: 84%"></span>
+                      <span class="rw-skel-line" style="width: 62%"></span>
+                    </div>
+                  </div>
+
+                  <div class="rw-result" data-rw="result">
+                  <div class="a-label a-label--green">
+                    <svg class="ic ic-14"><use href="#i-check-circle" /></svg>优化表达
+                    <span class="rw-tag">高半档</span>
+                  </div>
+                  <p class="rw-corrected">Although the plan has merit, I'm concerned about its practical risks.</p>
+                  <p class="rw-translation">虽然这个方案有可取之处，但我担心它落地的风险。</p>
+                </div>
+
+                <div class="rw-anchors" data-rw="anchors">
+                  <div class="a-label a-label--purple">
+                    <svg class="ic ic-14"><use href="#i-key" /></svg>锚点词
+                  </div>
+                  <div class="a-chips">
+                    <span class="a-chip a-chip--purple">has merit</span>
+                    <span class="a-chip a-chip--purple">practical risks</span>
+                  </div>
+                  <p class="a-tip">
+                    <svg class="ic ic-12"><use href="#i-lightbulb" /></svg>
+                    has merit 比 is good 具体，也更像书面表达。
+                  </p>
+                </div>
+
+                <div class="rw-analysis-wrap">
+                  <div class="rw-analysis" data-rw="analysis">
+                    <p><b>语法</b>Although 引导让步从句，替换 because 的因果堆叠。</p>
+                    <p><b>为啥换</b>把评价词换成具体判断，句子更稳，也更像书面语。</p>
+                  </div>
+                  <div class="rw-analysis-pending" data-rw-pending aria-hidden="true">
+                    <span class="rw-pending-label">拆解</span>
+                    <span class="rw-pending-line" style="width: 86%"></span>
+                    <span class="rw-pending-line" style="width: 58%"></span>
+                  </div>
+                </div>
+                </div>
+
+                <p class="rw-scroll-hint">往下滚，看它怎么改 ↓</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 界面 -->
+      <section class="section" id="screens">
+        <div class="wrap">
+          <div class="section-head section-head--split">
+            <div>
+              <h2>六块界面，一套控件</h2>
+              <p class="section-lede">从对话到画像，吸顶毛玻璃、圆角卡片、难度胶囊和底部弹层都是同一套。</p>
+            </div>
+            <p class="rail-hint"><span aria-hidden="true">←</span> 左右滑动看全部 <span aria-hidden="true">→</span></p>
+          </div>
+
+          <div class="screens-grid">
+            <figure class="screen-item" data-reveal>
+              <div class="phone phone--screen" aria-hidden="true">
+                <div class="phone-screen">
+                  <div class="app">
+                    <header class="a-header">
+                      <div class="a-head-row">
+                        <div class="a-title">Threenglish <span class="a-count">2/3</span></div>
+                        <div class="a-head-icons">
+                          <svg class="ic ic-18"><use href="#i-library" /></svg>
+                          <svg class="ic ic-18"><use href="#i-book-open" /></svg>
+                          <svg class="ic ic-18"><use href="#i-user-round" /></svg>
+                          <svg class="ic ic-18"><use href="#i-settings" /></svg>
+                        </div>
+                      </div>
+                    </header>
+                    <div class="a-chat">
+                      <div class="a-bubble">My room is very dirty and I can't sleep.</div>
+                      <article class="a-card a-card--compact">
+                        <div class="a-label a-label--green">
+                          <svg class="ic ic-14"><use href="#i-check-circle" /></svg>优化表达
+                        </div>
+                        <p class="a-sentence">The room was so filthy that I couldn't sleep.</p>
+                        <p class="a-translation">房间太脏了，我睡不着。</p>
+                        <div class="a-chips">
+                          <span class="a-chip a-chip--purple">filthy</span>
+                          <span class="a-chip a-chip--purple">so … that</span>
+                        </div>
+                        <div class="a-box">
+                          <p><b>语法：</b>so … that 把两个短句并成一个结果句。</p>
+                          <p><b>为啥换：</b>filthy 比 very dirty 更具体，也更省字。</p>
+                        </div>
+                      </article>
+                    </div>
+                    <div class="a-composer">
+                      <div class="a-composer-meta">
+                        <span class="a-level"><i></i>日常 <svg class="ic ic-11"><use href="#i-chevron-down" /></svg></span>
+                        <span>第 2 / 3 句</span>
+                      </div>
+                      <div class="a-input">
+                        <svg class="ic ic-16 a-undo"><use href="#i-undo-2" /></svg>
+                        <span class="a-placeholder">输入英文…</span>
+                        <span class="a-send"><svg class="ic ic-16"><use href="#i-send" /></svg></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption><b>首页对话</b><span>一句话一组，每轮三句；改写卡片直接长在对话里。</span></figcaption>
+            </figure>
+
+            <figure class="screen-item" data-reveal>
+              <div class="phone phone--screen" aria-hidden="true">
+                <div class="phone-screen">
+                  <div class="app">
+                    <div class="a-underlay">
+                      <header class="a-header">
+                        <div class="a-head-row">
+                          <div class="a-title a-title--sm">
+                            <svg class="ic ic-20"><use href="#i-chevron-left" /></svg>词库
+                          </div>
+                          <svg class="ic ic-18"><use href="#i-ellipsis" /></svg>
+                        </div>
+                      </header>
+                      <div class="a-page-pad">
+                        <div class="a-search">
+                          <svg class="ic ic-14"><use href="#i-search" /></svg>
+                          <span>输入单词或中文释义</span>
+                        </div>
+                        <div class="a-word-grid a-word-grid--flat">
+                          <div class="a-word"><b>abandon</b><span>v. 丢弃</span></div>
+                          <div class="a-word"><b>ability</b><span>n. 能力</span></div>
+                          <div class="a-word"><b>accidental</b><span>adj. 偶然的</span></div>
+                          <div class="a-word"><b>accompany</b><span>v. 陪伴</span></div>
+                          <div class="a-word"><b>accord</b><span>n. 一致</span></div>
+                          <div class="a-word"><b>according</b><span>adj. 相应的</span></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="a-sheet-backdrop"></div>
+                    <div class="a-sheet">
+                      <div class="a-sheet-bar">
+                        <span class="a-handle"></span>
+                        <svg class="ic ic-16"><use href="#i-x" /></svg>
+                      </div>
+                      <div class="a-wordcard">
+                        <div class="a-badges">
+                          <span class="a-badge a-badge--green">CET-4</span>
+                          <span class="a-badge a-badge--slate">高中基础</span>
+                        </div>
+                        <p class="a-word-big">abandon</p>
+                        <p class="a-phonetic"><svg class="ic ic-14"><use href="#i-volume" /></svg>/əˈbændən/</p>
+                        <div class="a-divider"></div>
+                        <div class="a-meaning">v. 丢弃</div>
+                        <div class="a-meaning">放弃，抛弃</div>
+                        <div class="a-divider"></div>
+                        <p class="a-section-label">常用搭配</p>
+                        <div class="a-chips">
+                          <span class="a-chip a-chip--plain">with abandon · 恣意地</span>
+                          <span class="a-chip a-chip--plain">abandon ship · 弃船</span>
+                        </div>
+                        <div class="a-divider"></div>
+                        <p class="a-section-label">例句</p>
+                        <div class="a-example">
+                          <p>How could she abandon her own child?</p>
+                          <span>她怎么能抛弃自己的孩子？</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption><b>单词卡片</b><span>句子里、词库里任意词点开即查，不跳页。</span></figcaption>
+            </figure>
+
+            <figure class="screen-item" data-reveal>
+              <div class="phone phone--screen" aria-hidden="true">
+                <div class="phone-screen">
+                  <div class="app">
+                    <header class="a-header a-header--tall">
+                      <div class="a-head-row">
+                        <div class="a-title a-title--sm">
+                          <svg class="ic ic-20"><use href="#i-chevron-left" /></svg>词库
+                        </div>
+                        <svg class="ic ic-18"><use href="#i-ellipsis" /></svg>
+                      </div>
+                      <div class="a-tabs">
+                        <span class="a-tab is-on">CET-4</span>
+                        <span class="a-tab">CET-6</span>
+                        <span class="a-tab">高中</span>
+                      </div>
+                      <div class="a-search-row">
+                        <div class="a-search">
+                          <svg class="ic ic-14"><use href="#i-search" /></svg>
+                          <span>输入单词或中文释义</span>
+                        </div>
+                        <span class="a-ai-btn"><svg class="ic ic-14"><use href="#i-sparkles" /></svg>AI</span>
+                      </div>
+                    </header>
+                    <div class="a-page-pad a-page-pad--flush">
+                      <div class="a-word-grid">
+                        <div class="a-word"><b>a</b><span>art. 一(个)</span></div>
+                        <div class="a-word"><b>accidental</b><span>adj. 偶然的</span></div>
+                        <div class="a-word"><b>abandon</b><span>v. 丢弃</span></div>
+                        <div class="a-word"><b>accommodate</b><span>v. 适合，提供住宿</span></div>
+                        <div class="a-word"><b>ability</b><span>n. 能力</span></div>
+                        <div class="a-word"><b>accommodation</b><span>n. 招待设备</span></div>
+                        <div class="a-word"><b>able</b><span>adj. 有能力的</span></div>
+                        <div class="a-word"><b>accompany</b><span>v. 陪伴</span></div>
+                        <div class="a-word"><b>abnormal</b><span>adj. 不正常的</span></div>
+                        <div class="a-word"><b>accomplish</b><span>v. 完成</span></div>
+                        <div class="a-word"><b>aboard</b><span>adv. 在船(车)上</span></div>
+                        <div class="a-word"><b>accord</b><span>v. 使一致</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption><b>词库</b><span>中英互查，离线可用；已安装的词库横向切换。</span></figcaption>
+            </figure>
+
+            <figure class="screen-item" data-reveal>
+              <div class="phone phone--screen" aria-hidden="true">
+                <div class="phone-screen">
+                  <div class="app">
+                    <header class="a-header a-header--tall">
+                      <div class="a-head-row">
+                        <div class="a-title a-title--sm">
+                          <svg class="ic ic-20"><use href="#i-chevron-left" /></svg>我的笔记
+                        </div>
+                      </div>
+                      <div class="a-filter">
+                        <span class="is-on">全部 12</span>
+                        <span>未掌握 7</span>
+                        <span>已掌握 5</span>
+                      </div>
+                    </header>
+                    <div class="a-notes">
+                      <article class="a-note">
+                        <div class="a-note-head">
+                          <span class="a-note-date"><svg class="ic ic-11"><use href="#i-calendar" /></svg>2026/10/19</span>
+                          <div class="a-note-actions">
+                            <svg class="ic ic-16"><use href="#i-check" /></svg>
+                            <span class="a-play"><svg class="ic ic-11"><use href="#i-play" /></svg>复习</span>
+                            <svg class="ic ic-16"><use href="#i-trash" /></svg>
+                          </div>
+                        </div>
+                        <p class="a-note-title">Although the plan has merit, I'm concerned about its practical risks.</p>
+                        <div class="a-note-toggle">查看完整摘要 <svg class="ic ic-14"><use href="#i-chevron-down" /></svg></div>
+                      </article>
+
+                      <article class="a-note">
+                        <div class="a-note-head">
+                          <span class="a-note-date"><svg class="ic ic-11"><use href="#i-calendar" /></svg>2026/10/18</span>
+                          <div class="a-note-actions">
+                            <svg class="ic ic-16"><use href="#i-check" /></svg>
+                            <span class="a-play"><svg class="ic ic-11"><use href="#i-play" /></svg>复习</span>
+                            <svg class="ic ic-16"><use href="#i-trash" /></svg>
+                          </div>
+                        </div>
+                        <p class="a-note-title">The room was so filthy that I couldn't sleep.</p>
+                        <div class="a-note-toggle">查看完整摘要 <svg class="ic ic-14"><use href="#i-chevron-down" /></svg></div>
+                      </article>
+
+                      <article class="a-note a-note--open">
+                        <div class="a-note-head">
+                          <span class="a-note-date"><svg class="ic ic-11"><use href="#i-calendar" /></svg>2026/10/17</span>
+                          <div class="a-note-actions">
+                            <span class="a-mastered"><svg class="ic ic-11"><use href="#i-check" /></svg>已掌握</span>
+                            <span class="a-play"><svg class="ic ic-11"><use href="#i-play" /></svg>复习</span>
+                          </div>
+                        </div>
+                        <p class="a-note-title">The dark used to terrify me when I was little.</p>
+                        <div class="a-note-toggle">查看完整摘要 <svg class="ic ic-14"><use href="#i-chevron-up" /></svg></div>
+                        <div class="a-note-summary">本组 3 句：描述童年、解释原因、补充细节。
+高频问题：冠词 2 处，时态 1 处。
+下次练习：用 used to 讲一个过去的习惯。</div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption><b>我的笔记</b><span>每三句自动归档；展开看摘要，标记已掌握。</span></figcaption>
+            </figure>
+
+            <figure class="screen-item" data-reveal>
+              <div class="phone phone--screen" aria-hidden="true">
+                <div class="phone-screen">
+                  <div class="app a-app--review">
+                    <div class="a-review-top">
+                      <span>1 / 3</span>
+                      <span class="a-review-close"><svg class="ic ic-18"><use href="#i-x" /></svg></span>
+                    </div>
+                    <div class="a-flashcard">
+                      <span class="a-flashcard-label">改写</span>
+                      <p class="a-flashcard-text">Although the plan has merit, I'm concerned about its practical risks.</p>
+                      <p class="a-flashcard-note"><svg class="ic ic-12"><use href="#i-lightbulb" /></svg>has merit 比 is good 具体，也更像书面表达。</p>
+                      <div class="a-flashcard-chips">
+                        <span>has merit</span>
+                        <span>practical risks</span>
+                      </div>
+                      <span class="a-master-btn"><svg class="ic ic-14"><use href="#i-check" /></svg>太简单了，标记为已掌握</span>
+                    </div>
+                    <div class="a-review-nav">
+                      <span class="a-round-btn"><svg class="ic ic-24"><use href="#i-chevron-left" /></svg></span>
+                      <span class="a-next-btn">下一句<svg class="ic ic-18"><use href="#i-chevron-right" /></svg></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption><b>复习闪卡</b><span>翻面看改写和锚点解析，点任意词继续查。</span></figcaption>
+            </figure>
+
+            <figure class="screen-item" data-reveal>
+              <div class="phone phone--screen" aria-hidden="true">
+                <div class="phone-screen">
+                  <div class="app">
+                    <header class="a-header">
+                      <div class="a-head-row">
+                        <div class="a-title a-title--sm">
+                          <svg class="ic ic-20"><use href="#i-chevron-left" /></svg>我的画像
+                        </div>
+                      </div>
+                    </header>
+                    <div class="a-profile">
+                      <section class="a-band-card">
+                        <div class="a-band-top">
+                          <div>
+                            <p class="a-label-sm">综合档位</p>
+                            <p class="a-band"><b>B1+</b><span>53/100</span></p>
+                          </div>
+                          <div class="a-band-right">
+                            <span class="a-confidence"><svg class="ic ic-11"><use href="#i-activity" /></svg>置信度 中</span>
+                            <span class="a-target"><svg class="ic ic-11"><use href="#i-target" /></svg>目标 B2</span>
+                          </div>
+                        </div>
+                        <div class="a-scale"><span style="width: 53%"></span></div>
+                        <div class="a-scale-labels"><span>A1</span><span>A1+</span><span>A2</span><span>A2+</span><span>B1</span><span>B1+</span><span>B2</span><span>B2+</span><span>C1</span><span>C1+</span><span>C2</span></div>
+                        <div class="a-stats">
+                          <div><span>词汇</span><b>B2+</b></div>
+                          <div><span>句法</span><b>B1+</b></div>
+                          <div><span>准确度</span><b>A2</b></div>
+                        </div>
+                        <p class="a-footnote">基于最近 18 句：词汇档看高阶词占比，句法档看复杂结构数。</p>
+                      </section>
+
+                      <section class="a-white-card">
+                        <div class="a-card-title"><h3>用词分布</h3><span>去重 148 个词</span></div>
+                        <div class="a-meter"><div class="a-meter-head"><span>初中</span><b>31%</b></div><div class="a-meter-track"><i style="width:31%"></i></div></div>
+                        <div class="a-meter"><div class="a-meter-head"><span>高中</span><b>18%</b></div><div class="a-meter-track"><i style="width:18%"></i></div></div>
+                        <div class="a-meter"><div class="a-meter-head"><span>四级</span><b>24%</b></div><div class="a-meter-track"><i class="is-green" style="width:24%"></i></div></div>
+                        <div class="a-meter"><div class="a-meter-head"><span>表外 / 超出所有词库</span><b>16%</b></div><div class="a-meter-track"><i class="is-slate" style="width:16%"></i></div></div>
+                      </section>
+
+                      <section class="a-white-card">
+                        <div class="a-card-title"><h3>词库覆盖率</h3></div>
+                        <div class="a-meter"><div class="a-meter-head"><span>CET-4</span><b>62%</b></div><div class="a-meter-track"><i class="is-green" style="width:62%"></i></div></div>
+                        <p class="a-footnote">按推断的词汇量估算，不是只统计你用过的词。</p>
+                      </section>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption><b>我的画像</b><span>档位、用词分布、覆盖率和高频错误，都从原句算。</span></figcaption>
+            </figure>
+          </div>
+
+          <div class="live-shots">
+            <div class="live-shots-head">
+              <h3>实机截图</h3>
+              <span>Android · 390 × 844</span>
+            </div>
+            <div class="live-shots-row">
+              <figure>
+                <img src="assets/live-words.png" alt="词库列表实机截图" />
+                <figcaption>词库</figcaption>
+              </figure>
+              <figure>
+                <img src="assets/live-word-sheet.png" alt="单词卡片弹层实机截图" />
+                <figcaption>单词卡片</figcaption>
+              </figure>
+              <figure>
+                <img src="assets/live-dictionaries.png" alt="词库管理实机截图" />
+                <figcaption>词库管理</figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 词库 -->
+      <section class="section" id="dict">
+        <div class="wrap split">
+          <div class="split-copy">
+            <h2>词库是本地文件，不联网也能查</h2>
+            <p class="lede">三本词库随包内置，更多考试词库按需下载。查词走本地索引，点一下就出卡片。</p>
+
+            <ul class="dict-counts">
+              <li><span>初中基础</span><b>1 987</b></li>
+              <li><span>高中基础</span><b>3 743</b></li>
+              <li><span>CET-4 · 音标 / 例句 / 搭配</span><b>4 544</b></li>
+            </ul>
+
+            <p class="aside">
+              可下载 CET-6、考研、专四、专八、雅思、托福、GRE、GMAT、SAT、BEC 与人教版教材。
+              内容分轻量、标准、完整三档，支持填国内镜像。
+            </p>
+          </div>
+
+          <div class="split-visual" data-reveal>
+            <div class="d-panel">
+              <div class="d-header">
+                <div class="a-title a-title--sm"><svg class="ic ic-20"><use href="#i-chevron-left" /></svg>词库管理</div>
+                <div class="d-cats">
+                  <span>基础</span>
+                  <span class="is-on">大学考试</span>
+                  <span>英语专业</span>
+                  <span>留学考试</span>
+                  <span>教材</span>
+                </div>
+              </div>
+
+              <div class="d-list">
+                <div class="d-book">
+                  <div class="d-book-main">
+                    <p class="d-book-title">CET-4 <span class="d-badge">内置</span></p>
+                    <p class="d-book-desc">四级核心词，含音标、例句与常用搭配</p>
+                    <p class="d-book-meta">已安装 4 544 词</p>
+                  </div>
+                  <span class="d-download"><svg class="ic ic-12"><use href="#i-download" /></svg>更新</span>
+                </div>
+                <div class="d-book">
+                  <div class="d-book-main">
+                    <p class="d-book-title">CET-6</p>
+                    <p class="d-book-desc">六级大纲词，标准档含例句与英美音标</p>
+                    <p class="d-book-meta">未安装</p>
+                  </div>
+                  <span class="d-download"><svg class="ic ic-12"><use href="#i-download" /></svg>下载</span>
+                </div>
+                <div class="d-book">
+                  <div class="d-book-main">
+                    <p class="d-book-title">考研</p>
+                    <p class="d-book-desc">考研英语大纲词，完整档含真题例句</p>
+                    <p class="d-book-meta">未安装</p>
+                  </div>
+                  <span class="d-download"><svg class="ic ic-12"><use href="#i-download" /></svg>下载</span>
+                </div>
+              </div>
+
+              <div class="d-bottom">
+                <div class="d-variant-row">
+                  <span>下载内容</span>
+                  <div class="d-variant"><span>轻量</span><span class="is-on">标准</span><span>完整</span></div>
+                </div>
+                <div class="d-mirror">
+                  <span class="d-mirror-input">镜像前缀，留空用 GitHub 直连</span>
+                  <span class="d-btn">保存</span>
+                  <span class="d-btn"><svg class="ic ic-11"><use href="#i-copy" /></svg>示例</span>
+                </div>
+                <div class="d-task">
+                  <div class="d-task-row">
+                    <span><b>CET-6</b>：正在下载分卷 2 / 3</span>
+                    <span class="d-task-cancel">取消</span>
+                  </div>
+                  <div class="d-task-track"><i style="width: 42%"></i></div>
+                </div>
+                <p class="d-hint">下载在后台继续，离开本页不会中断。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 画像 -->
+      <section class="section" id="profile">
+        <div class="wrap split split--profile">
+          <div class="split-copy">
+            <h2>它不猜，它算</h2>
+            <p class="lede">所有指标都从你的原句算，不看 AI 改得多好。否则改得越多，分反而越低。</p>
+
+            <div class="profile-facts">
+              <div>
+                <span class="fact-weight">45%</span>
+                <h3>词汇</h3>
+                <p>按词库等级分档。一个词被多本词库收录时，按最低等级算。</p>
+              </div>
+              <div>
+                <span class="fact-weight">30%</span>
+                <h3>句法</h3>
+                <p>从句、非谓语、被动、名词短语长度各计一次；均值与 75 分位各半。</p>
+              </div>
+              <div>
+                <span class="fact-weight">25%</span>
+                <h3>准确度</h3>
+                <p>只看你原句的错误类型，按严重度计权。AI 的润色、换高级词不算你写错。</p>
+              </div>
+            </div>
+
+            <p class="aside">
+              样本不足会封顶：不足 8 句最多 B2，8–19 句最多 C1，20 句以上才放开 C2。
+            </p>
+          </div>
+
+          <div class="profile-board" data-reveal>
+            <section class="pb-card pb-card--band">
+              <div class="pb-band-top">
+                <div>
+                  <p class="pb-label">综合档位</p>
+                  <p class="pb-band"><b>B1+</b><span>53 / 100</span></p>
+                </div>
+                <div class="pb-band-side">
+                  <span class="pb-confidence"><svg class="ic ic-12"><use href="#i-activity" /></svg>置信度 中</span>
+                  <span class="pb-target"><svg class="ic ic-12"><use href="#i-target" /></svg>目标 B2</span>
+                </div>
+              </div>
+              <div class="pb-scale"><span style="width: 53%"></span></div>
+              <div class="pb-scale-labels">
+                <span>A1</span><span>A1+</span><span>A2</span><span>A2+</span><span>B1</span><span>B1+</span><span>B2</span><span>B2+</span><span>C1</span><span>C1+</span><span>C2</span>
+              </div>
+              <div class="pb-substats">
+                <div><span>词汇</span><b>B2+</b></div>
+                <div><span>句法</span><b>B1+</b></div>
+                <div><span>准确度</span><b>A2</b></div>
+              </div>
+              <p class="pb-footnote">基于最近 18 句：词汇档看高阶词占比，句法档看复杂结构数，准确度看每百词错误数。</p>
+            </section>
+
+            <section class="pb-card">
+              <div class="pb-card-head">
+                <h3>用词分布</h3>
+                <span>去重 148 个词</span>
+              </div>
+              <div class="pb-meter"><div class="pb-meter-head"><span>初中</span><b>31%</b></div><div class="pb-meter-track"><i style="width: 31%"></i></div></div>
+              <div class="pb-meter"><div class="pb-meter-head"><span>高中</span><b>18%</b></div><div class="pb-meter-track"><i style="width: 18%"></i></div></div>
+              <div class="pb-meter"><div class="pb-meter-head"><span>四级</span><b>24%</b></div><div class="pb-meter-track"><i class="is-green" style="width: 24%"></i></div></div>
+              <div class="pb-meter"><div class="pb-meter-head"><span>六级</span><b>6%</b></div><div class="pb-meter-track"><i class="is-green" style="width: 6%"></i></div></div>
+              <div class="pb-meter"><div class="pb-meter-head"><span>表外 / 超出所有词库</span><b>16%</b></div><div class="pb-meter-track"><i class="is-slate" style="width: 16%"></i></div></div>
+            </section>
+
+            <section class="pb-card">
+              <div class="pb-card-head">
+                <h3>高频错误</h3>
+                <span>最近 18 句</span>
+              </div>
+              <div class="pb-error"><span>冠词</span><b>7</b><div class="pb-meter-track"><i class="is-rose" style="width: 100%"></i></div></div>
+              <div class="pb-error"><span>主谓一致</span><b>5</b><div class="pb-meter-track"><i class="is-rose" style="width: 71%"></i></div></div>
+              <div class="pb-error"><span>介词</span><b>4</b><div class="pb-meter-track"><i class="is-rose" style="width: 57%"></i></div></div>
+              <div class="pb-error"><span>时态</span><b>3</b><div class="pb-meter-track"><i class="is-rose" style="width: 43%"></i></div></div>
+              <div class="pb-error"><span>搭配</span><b>2</b><div class="pb-meter-track"><i class="is-rose" style="width: 29%"></i></div></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- 隐私 -->
+      <section class="section" id="privacy">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>数据留在本机，联网只发必要的内容</h2>
+          </div>
+          <ul class="privacy-grid">
+            <li data-reveal>
+              <span class="privacy-icon"><svg class="ic ic-20"><use href="#i-database" /></svg></span>
+              <h3>笔记和词库存在本地</h3>
+              <p>练习记录、画像和已下载词库都写进手机本地的 IndexedDB，不上传。</p>
+            </li>
+            <li data-reveal>
+              <span class="privacy-icon"><svg class="ic ic-20"><use href="#i-wifi-off" /></svg></span>
+              <h3>联网只为改写和查词</h3>
+              <p>只调用 DeepSeek：改写句子，或你主动开启的 AI 查词与场景提示。API Key 只保存在本机。</p>
+            </li>
+            <li data-reveal>
+              <span class="privacy-icon"><svg class="ic ic-20"><use href="#i-shield" /></svg></span>
+              <h3>词库直连，不经中转</h3>
+              <p>词库从 GitHub 或你配置的镜像直接下载，没有中间服务器。</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 下载 -->
+      <section class="section download-section" id="download">
+        <div class="wrap">
+          <div class="download-card" data-reveal>
+            <div class="download-main">
+              <img src="assets/icon.png" alt="" width="64" height="64" />
+              <div>
+                <h2>装到手机上</h2>
+                <p>Android APK 4.5 MB。需要自备 DeepSeek API Key，安装包放在 GitHub Releases，发新版只换同一个链接。</p>
+              </div>
+            </div>
+            <div class="download-actions">
+              <a class="btn btn-light" id="apk-link" href="#">下载 APK</a>
+              <a class="btn btn-outline-light" id="repo-link" href="#">查看源码 <svg class="ic ic-16"><use href="#i-arrow-up-right" /></svg></a>
+            </div>
+            <p class="download-note">iOS 需要 macOS 环境自行构建，暂未提供。</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <div class="footer-brand">
+          <a class="brand brand--footer" href="#top">
+            <img class="brand-mark" src="assets/icon.png" alt="" width="26" height="26" />
+            <span>Threenglish</span>
+          </a>
+          <p>纯前端 · 本地优先 · Next.js + Capacitor</p>
+        </div>
+        <p class="footer-note">
+          词库数据来自 <a href="https://github.com/KyleBing/dict" rel="noopener">KyleBing/dict</a>（上游
+          <a href="https://github.com/kajweb/dict" rel="noopener">kajweb/dict</a>）。
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="app.js?v=4"></script>
+  </body>
+</html>
