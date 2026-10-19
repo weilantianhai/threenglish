@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Threenglish</string>
+    <string name="title_activity_main">Threenglish</string>
+    <string name="package_name">com.threenglish.app</string>
+    <string name="custom_url_scheme">com.threenglish.app</string>
+</resources>

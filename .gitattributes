@@ -1,0 +1,18 @@
+# 仓库内统一 LF，Windows 工具按需转换
+* text=auto eol=lf
+
+# 二进制文件不做换行转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.jks binary
+*.keystore binary
+*.apk binary
+*.aab binary
+*.jar binary
+
+# Windows 批处理必须 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf

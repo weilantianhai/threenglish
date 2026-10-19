@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 自适应图标背景：与 App 内的 indigo-600 一致 -->
+    <color name="ic_launcher_background">#4F46E5</color>
+</resources>
