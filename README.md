@@ -4,7 +4,7 @@
 
 纯前端应用：所有数据（笔记、画像、词库）都存在本机，只有一个请求会发出去 —— 调用 DeepSeek 改写你的句子。
 
-- 项目展示页：https://weilantianhai.github.io/threenglish/（源码在 `site/`）
+- 项目展示页：https://weilantianhai.github.io/threenglish/（源码在 `docs/`）
 - 最新 Android 安装包：https://github.com/weilantianhai/threenglish/releases/latest
 
 ---
